@@ -1,3 +1,114 @@
 Test cases (Now ignored): 1
 Problem Instance : 
-Period : 3
+Period : 1
+Depot : 2
+Vehicle Count : 2
+Vehicle per depot : 1 1
+Depot allocation per depot : 0 1
+Load capacity per vehicle : 10.0 10.0
+Time constraints per vehicle :
+15.0 15.0 
+Load capacity per vehicle : 10.0 10.0
+Clients : 5
+Frequency allocation : 1 1 1 1 1 
+Service Time : 5.0 5.0 5.0 5.0 5.0 
+Demand (load) : 3.0 3.0 3.0 3.0 3.0 
+Printing cost matrix : 
+0.0 5.0 1.0 5.0 1.0 5.0 5.0 
+5.0 0.0 5.0 5.0 5.0 1.0 1.0 
+1.0 5.0 0.0 1.0 5.0 5.0 5.0 
+5.0 5.0 1.0 0.0 1.0 5.0 5.0 
+1.0 5.0 5.0 1.0 0.0 5.0 5.0 
+5.0 1.0 5.0 5.0 5.0 0.0 1.0 
+5.0 1.0 5.0 5.0 5.0 1.0 0.0 
+
+Initial population : 
+Printing individual 0 : 
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+1 3 4 2 0 
+Route partition : 1 4 
+
+
+LOAD VIOLATION MATRIX : 
+-4.0 -1.0 
+Total Load Violation : 0.0
+Total route time violation : 26.0
+Fitness/Cost : 31.0
+Printing individual 1 : 
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+1 0 2 4 3 
+Route partition : 4 4 
+
+
+LOAD VIOLATION MATRIX : 
+5.0 0.0 
+Total Load Violation : 5.0
+Total route time violation : 32.0
+Fitness/Cost : 22.0
+Printing individual 2 : 
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+4 2 0 3 1 
+Route partition : 0 4 
+
+
+LOAD VIOLATION MATRIX : 
+-7.0 2.0 
+Total Load Violation : 2.0
+Total route time violation : 30.0
+Fitness/Cost : 35.0
+
+
+
+FINAL POPULATION
+
+Individual : 0
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+1 0 2 4 3 
+Route partition : 2 4 
+
+
+LOAD VIOLATION MATRIX : 
+-1.0 -4.0 
+Total Load Violation : 0.0
+Total route time violation : 12.0
+Fitness/Cost : 15.0
+Individual : 1
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+1 0 2 4 3 
+Route partition : 2 4 
+
+
+LOAD VIOLATION MATRIX : 
+-1.0 -4.0 
+Total Load Violation : 0.0
+Total route time violation : 12.0
+Fitness/Cost : 15.0
+Individual : 2
+PERIOD ASSIGMENT : 
+
+1 1 1 1 1 
+Permutation : 
+1 2 0 4 3 
+Route partition : 2 4 
+
+
+LOAD VIOLATION MATRIX : 
+-1.0 -4.0 
+Total Load Violation : 0.0
+Total route time violation : 12.0
+Fitness/Cost : 15.0

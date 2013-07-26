@@ -27,8 +27,8 @@ public class Solver
 			input = new Scanner(inputFile);
 			
 			outputFile = new File(outputFileName);
-			output = new PrintWriter(System.out);//for console output
-			//output = new PrintWriter(outputFile);//for file output
+			//output = new PrintWriter(System.out);//for console output
+			output = new PrintWriter(outputFile);//for file output
 						
 			
 			int testCases = input.nextInt(); 
@@ -57,16 +57,8 @@ public class Solver
 	{
 		problemInstance.print();
 		
-		Individual individual = new Individual(problemInstance);
-		individual.print();
-		
-		individual.mutatePeriodAssignment(0);
-		individual.calculateFitness();
-		individual.print();
-		
-		individual.mutatePeriodAssignment(1);
-		individual.calculateFitness();
-		individual.print();
+		BasicAlgo basicAlgo = new BasicAlgo(problemInstance);
+		basicAlgo.run();
 		
 		output.close();
 		
