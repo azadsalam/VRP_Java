@@ -1,0 +1,324 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+#define POPULATION_SIZE 300
+#define NUMBER_OF_OFFSPRING 150
+
+#define NUMBER_OF_GENERATION 500
+
+class Individual
+{
+public:
+
+	
+};
+
+class GeneticAlgo
+{
+	ProblemInstance problemInstance;
+	Individual population[POPULATION_SIZE];
+
+	//for storing new generated offsprings
+	Individual offspringPopulation[NUMBER_OF_OFFSPRING];
+
+	//for temporary storing
+	Individual temporaryPopulation[POPULATION_SIZE];
+
+	// for selection - roulette wheel
+	double fitness[POPULATION_SIZE];
+	double cdf[POPULATION_SIZE];
+
+	double loadPenaltyFactor;
+	double routeTimePenaltyFactor;
+
+public:
+	GeneticAlgo(ProblemInstance problemInstance)
+	{
+		this -> problemInstance = problemInstance;
+		loadPenaltyFactor = 0.6;
+		routeTimePenaltyFactor = 0.6;
+	}
+	void run()
+	{
+		int selectedParent;
+
+		Individual parent,offspring;
+
+		//problemInstance.print();
+
+		// INITIALISE POPULATION
+		initialisePopulation();
+
+		sort(population,POPULATION_SIZE);
+
+    int i;
+		for(int generation=0;generation<NUMBER_OF_GENERATION;generation++)
+		{
+			//sort function uses selection sort, replace with some O(n lg n) sort algthm
+
+			//cout << "--------------------------\nGENERATION : "<<generation<<"\n";
+
+			//Select a parent and apply genetic operator
+			for( i=0;i<NUMBER_OF_OFFSPRING;i++)
+			{
+
+					selectedParent=rouletteWheelSelection(generation);
+
+					parent = population[selectedParent];
+					offspring.makeCopy(parent);
+
+
+					applyMutation(offspring);
+					//cout << "Selected Parent : " << selectedParent <<endl;
+					//parent.print();
+					offspring.calculateFitness();
+					//cout << "Offspring : "<<i<<"\n";
+					//offspring.print();
+
+					offspringPopulation[i] = offspring;
+
+			}
+
+
+			//cout <<"\n\n\n\n\n---TESTING (lamba + miu)"<<endl<<endl;
+
+			//////////////////////////////////////////////////////////////////////////
+			/*
+			cout <<"PRINTING PARENT POPULATION\n";
+			for( i=0;i<POPULATION_SIZE;i++)
+			{
+				cout << "parent " << i << " :\n";
+				population[i].print();
+			}
+			cout << endl<<endl;
+			*/
+			//////////////////////////////////////////////////////////////////////////////
+
+			//TAKE THE BEST "POPULATION_SIZE" individuals from the set of all parents and children
+			sort(offspringPopulation,NUMBER_OF_OFFSPRING);
+
+
+			//////////////////////////////////////////////////////////////////////////////
+			/*
+			cout <<"PRINTING OFFSPRING POPULATION\n";
+			for( i=0;i<NUMBER_OF_OFFSPRING;i++)
+			{
+				cout << "offspring " << i << " :\n";
+				offspringPopulation[i].print();
+			}
+			cout << endl<<endl;
+			*/
+			//////////////////////////////////////////////////////////////////////////////
+
+			//first select best indivdls in the temporary array
+			//afterwards replace population with it
+			i = 0;
+			int j = 0;
+			int cursor = 0;
+
+			while(cursor<POPULATION_SIZE)
+			{
+				if(i == POPULATION_SIZE)
+				{
+					temporaryPopulation[cursor] = offspringPopulation[j];
+					j++;
+				}
+				else if(j== NUMBER_OF_OFFSPRING)
+				{
+					temporaryPopulation[cursor] = population[i];
+					i++;
+				}
+				else if(population[i].cost <= offspringPopulation[j].cost)
+				{
+					temporaryPopulation[cursor] = population[i];
+					i++;
+				}
+				else
+				{
+					temporaryPopulation[cursor] = offspringPopulation[j];
+					j++;
+				}
+				cursor++;
+			}
+
+			//replace population with temporary array
+			for(i=0;i<POPULATION_SIZE;i++)
+			{
+				population[i] = temporaryPopulation[i];
+			}
+
+
+			//////////////////////////////////////////////////////////////////////////
+			/*
+			cout <<"PRINTING NEW GENERATION\n";
+			for( i=0;i<POPULATION_SIZE;i++)
+			{
+				cout << "parent " << i << " :\n";
+				population[i].print();
+			}
+			cout << endl<<endl;
+			*/
+			//////////////////////////////////////////////////////////////////////////////
+
+
+
+		}
+
+
+		cout<<"\n\n\n\n\n--------------------------------------------------\n";
+		cout<<"FINAL POPULATION"<<endl;
+		for( i=0;i<POPULATION_SIZE;i++)
+		{
+			cout<<"Individual : "<<i<<endl;
+			population[i].print();
+		}
+
+	}
+
+
+	// for now not applying periodAssignment Mutation operator
+	// for now working with only MDVRP ->  period = 1
+	void applyMutation(Individual offspring)
+	{
+		int selectedMutationOperator = selectMutationOperator();
+		if(selectedMutationOperator==0)offspring.mutateRoutePartition();
+		else if (selectedMutationOperator == 1)
+		{
+			int period = rand()%problemInstance.periodCount;
+			offspring.mutatePermutation(period);//for now single period
+		}
+		else if (selectedMutationOperator == 2)
+		{
+			int client = rand()%problemInstance.customerCount;
+			offspring.mutatePeriodAssignment(client);
+		}
+		/*else
+		{
+		//	offspring.mutateRoutePartition();
+		//	offspring.mutatePermutation(0);
+		}*/
+
+	}
+
+	//0 -> route partition
+	//1 ->	permutation
+	//2 -> period
+	int selectMutationOperator()
+	{
+		return rand()%3;
+	}
+
+	//SORT THE INDIVIDUALS ON ASCENDING ORDER OF COST
+	//BETTER INDIVIDUALS HAVE LOWER INDEX
+	//COST LESS, INDEX LESS ;-)
+	void sort(Individual* array,int length)
+	{
+		Individual temp;
+		//FOR NOW DONE SELECTION SORT
+		//AFTERWARDS REPLACE IT WITH QUICK SORT OR SOME OTHER O(n logn) sort
+		for(int i=0;i<length;i++)
+		{
+			for(int j=i+1;j<length;j++)
+			{
+				if(array[i].cost >array[j].cost)
+				{
+					temp = array[i];
+					array[i] =array[j];
+					array[j] = temp;
+				}
+			}
+		}
+
+	}
+
+
+	// it also calculates cost of every individual
+	int rouletteWheelSelection(int generation)
+	{
+    int i,j;
+		//SELECTION -> Roulette wheel
+		double sumOfFitness = 0,sumOfCost=0;
+		double sumOfProability = 0;
+
+		//cout<< "SELECTION\nCost : ";
+		for( i=0;i<POPULATION_SIZE;i++)
+		{
+			population[i].calculateFitness();
+			fitness[i] = population[i].cost;
+			// incorporate penalty
+	
+			double penalty = loadPenaltyFactor * (generation+1) * population[i].totalLoadViolation;
+			if(penalty>0)fitness[i] += penalty;
+			
+			penalty = routeTimePenaltyFactor * (generation+1) * population[i].totalRouteTimeViolation;
+			if(penalty>0)fitness[i] += penalty;
+
+
+		
+			sumOfCost += fitness[i];
+			//cout << " "<<fitness[i];
+		}
+		//cout <<"   Total cost : "<<sumOfCost<<endl;
+
+//		cout<< "Fitness : ";
+		for( i=0;i<POPULATION_SIZE;i++)
+		{
+			fitness[i] = sumOfCost / fitness[i]; // the original fitness
+			
+			sumOfFitness += fitness[i];
+		//	cout << " "<< fitness[i];
+		}
+		//cout <<"    Total fitness : "<<sumOfFitness<<endl;
+
+		for( i=0;i<POPULATION_SIZE;i++)
+		{
+			sumOfProability = cdf[i] = sumOfProability + ((double)fitness[i]/sumOfFitness);
+		}
+
+		double num = rand()%101; // generate random number from [0,100]
+		double indicator = num/100;
+
+		//find the smallest index i, with cdf[i] greater than indicator
+
+		int par =  findParent(indicator);
+		//cout <<"Selected Parent : "<< par<<endl;
+		return par;
+
+	}
+
+	//binary search for smallest index i, having cdf[i] greater than indicator
+	int findParent(double indicator)
+	{
+		//for now linear search, do binary search later
+		for(int i=0;i<POPULATION_SIZE;i++)
+			if(cdf[i]>=indicator)
+				return i;
+		return POPULATION_SIZE-1;
+	}
+
+	void initialisePopulation()
+	{
+		cout << "Initial population : \n";
+		for(int i=0; i<POPULATION_SIZE; i++)
+		{
+			population[i].initialise(problemInstance);
+			cout<<"Printing individual "<<i <<" : "<<endl;
+			population[i].print();
+		}
+	}
+};
+ProblemInstance problemInstance;
+
+void parseInputFile()
+{
+
+		//problemInstance.print();
+
+		GeneticAlgo ga(problemInstance);
+		ga.run();
+
+}
+
