@@ -33,17 +33,12 @@ public class Individual
 	}
 	
 	
-	public Individual(ProblemInstance problemInstance)
+	public void initialise() 
 	{
-		this.problemInstance = problemInstance;
-		
-		int i,j;
+		// TODO Auto-generated method stub
 
-		// ALLOCATING periodCount * customerCount Matrix for Period Assignment
-		periodAssignment = new boolean[problemInstance.periodCount][problemInstance.customerCount];
+		int i,j;
 		
-		//ALLOCATING permutation map matrix -> period * customer
-		permutation = new int[problemInstance.periodCount][problemInstance.customerCount];
 		for( i=0;i<problemInstance.periodCount;i++)
 		{
 			// initially every permutation is identity permutation
@@ -53,11 +48,6 @@ public class Individual
 			}
 		}
 		
-		
-		//allocating routeAllocation
-		routePartition = new int[problemInstance.vehicleCount];
-
-
 		// NOW INITIALISE WITH VALUES
 
 		//initialize period assignment
@@ -99,8 +89,7 @@ public class Individual
 				permutation[period][j] = tmp;
 			}
 		}
-
-
+		
 		//NEED TO GENERATE #vehicle-1 (not distinct - distinct) random numbers in increasing order from [0,#customer - 1]
 		// DEVICE some faster and smarter algorithm
 
@@ -118,11 +107,26 @@ public class Individual
 			allocated++;
 		}
 		routePartition[problemInstance.vehicleCount-1] = problemInstance.customerCount-1;
-		
-		loadViolation = new double[problemInstance.periodCount][problemInstance.vehicleCount];
-				
+
 		calculateFitness();
 
+	}
+	
+	public Individual(ProblemInstance problemInstance)
+	{
+		this.problemInstance = problemInstance;
+		
+		// ALLOCATING periodCount * customerCount Matrix for Period Assignment
+		periodAssignment = new boolean[problemInstance.periodCount][problemInstance.customerCount];
+		
+		//ALLOCATING permutation map matrix -> period * customer
+		permutation = new int[problemInstance.periodCount][problemInstance.customerCount];
+		
+		
+		//allocating routeAllocation
+		routePartition = new int[problemInstance.vehicleCount];
+
+		loadViolation = new double[problemInstance.periodCount][problemInstance.vehicleCount];
 	}
 	
 	
@@ -198,7 +202,7 @@ public class Individual
 		else isFeasible = true;
 
 		
-		//costWithPenalty = cost + totalLoadViolation + totalRouteTimeViolation;
+		costWithPenalty = cost + totalLoadViolation + totalRouteTimeViolation;
 		return cost;
 	}
 
@@ -337,8 +341,50 @@ public class Individual
         out.println("Total Load Violation : "+totalLoadViolation);        
         out.println("Total route time violation : "+totalRouteTimeViolation);		
 		out.println("Cost : " + cost);
-		//out.println("Cost with penalty : "+costWithPenalty);
+		out.println("Cost with penalty : "+costWithPenalty);
 		out.println();
+		
+	}
+	
+	void miniPrint()
+	{
+		PrintWriter out = this.problemInstance.getPrintWriter();
+		int i,j;
+		
+		out.println("PERIOD ASSIGMENT : ");
+		for( i=0;i<problemInstance.periodCount;i++)
+		{
+			for( j=0;j<problemInstance.customerCount;j++)
+			{
+				if(periodAssignment[i][j])	out.print("1 ");
+				else out.print("0 ");
+				
+			}
+			out.println();
+		}
+
+		out.print("Permutation : \n");
+		for( i=0; i<problemInstance.periodCount;i++)
+		{
+			for( j=0;j<problemInstance.customerCount;j++)
+			{
+				out.print(permutation[i][j]+" ");
+			}
+			out.println();
+		}
+
+		out.print("Route partition : ");
+		for( i=0;i<problemInstance.vehicleCount;i++)out.print(routePartition[i] +" ");
+		out.println();
+		
+
+        // print load violation
+        out.println("Is Feasible : "+isFeasible);
+        out.println("Total Load Violation : "+totalLoadViolation);        
+        out.println("Total route time violation : "+totalRouteTimeViolation);		
+		out.println("Cost : " + cost);
+		out.println("Cost with penalty : "+costWithPenalty);
+		out.println("\n");
 		
 	}
 	
@@ -433,7 +479,105 @@ public class Individual
 		return 1;
 	}
 	
+	/** 
+	 * 
+	  */
+	static void crossOver(ProblemInstance problemInstance,Individual parent1,Individual parent2,Individual child1,Individual child2)
+	{
+		//with 50% probability swap parents
+		int ran = Utility.randomIntInclusive(1);
+		if(ran ==1)
+		{
+			Individual temp = parent1;
+			parent1 = parent2;
+			parent2 = temp;
+		}
+		
+		
+		//child 1 gets first n customers assignment from parent 1 and rest from parent 2
+		//child 2 gets first n customers assignment from parent 2 and rest from parent 1
+		int n = Utility.randomIntInclusive(problemInstance.customerCount);
+		
+		
+		copyPeriodAssignmentFromParents(child1, parent1, parent2, n ,problemInstance);
+		copyPeriodAssignmentFromParents(child2, parent2, parent1, n ,problemInstance);
+		
+		//child 1 gets permutation of first n period from parent 1
+		n = Utility.randomIntInclusive(problemInstance.periodCount);
+		
+		copyPermutation(child1, parent1, parent2, n, problemInstance);
+		copyPermutation(child2, parent2, parent1, n, problemInstance);
+		
+		
+		// crossover route partition
+		
+		int temp[] = new int[problemInstance.vehicleCount*2];
+		int i;
+		for(i=0;i<problemInstance.vehicleCount;i++) temp[i] = parent1.routePartition[i];
+		for(i=0;i<problemInstance.vehicleCount;i++) temp[i+problemInstance.vehicleCount] = parent2.routePartition[i];
+		
+		
+		for(i=0;i<problemInstance.vehicleCount*2;i++)
+		{
+			for(int j=i+1;j<problemInstance.vehicleCount*2;j++)
+			{
+				if(temp[i]>temp[j])
+				{
+					int tmp = temp[i];
+					temp[i] = temp[j];
+					temp[j]=tmp;
+				}
+			}
+		}
+		
+		for( i=0;i<problemInstance.vehicleCount;i++) child1.routePartition[i] = temp[2*i];
+		for( i=0;i<problemInstance.vehicleCount;i++) child2.routePartition[i] = temp[2*i+1];
+		
+		
+		//System.out.println(" "+n);
+	}
+
+	//copy first n row from parent 1's permutation
+	private static void copyPermutation(Individual child, Individual parent1, Individual parent2,int n,ProblemInstance problemInstance) 
+	{
+		int i;
+		
+		for(i=0;i<problemInstance.customerCount;i++)
+		{
+			for(int period = 0;period<n;period++)
+			{
+				child.permutation[period][i] = parent1.permutation[period][i];
+			}
+		}
+		
+		for(i=0;i<problemInstance.customerCount;i++)
+		{
+			for(int period = n;period<problemInstance.periodCount;period++)
+			{
+				child.permutation[period][i] = parent2.permutation[period][i];
+			}
+		}
+		
+	}
 	
-	
+	//copies first n columns from parent1 and rest of them from parent 2 
+	private static  void copyPeriodAssignmentFromParents(Individual child, Individual parent1, Individual parent2,int n,ProblemInstance problemInstance)
+	{
+		int i;
+		for(int period = 0; period<problemInstance.periodCount; period++)
+		{
+			for(i=0;i<n;i++)
+			{
+				child.periodAssignment[period][i] = parent1.periodAssignment[period][i];
+			}
+		}
+		for(int period = 0; period<problemInstance.periodCount; period++)
+		{
+			for(i=n;i<problemInstance.customerCount;i++)
+			{
+				child.periodAssignment[period][i] = parent2.periodAssignment[period][i];
+			}
+		}
+	}
 
 }

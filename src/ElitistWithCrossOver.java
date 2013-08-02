@@ -2,13 +2,13 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 
-public class BasicAlgo 
+public class ElitistWithCrossOver 
 {
 	PrintWriter out; 
 	
-	int POPULATION_SIZE = 200;
-	int NUMBER_OF_OFFSPRING = 100;
-	int NUMBER_OF_GENERATION = 500;
+	int POPULATION_SIZE = 500;
+	int NUMBER_OF_OFFSPRING = 300; //must be even
+	int NUMBER_OF_GENERATION = 1000;
 	
 	ProblemInstance problemInstance;
 	Individual population[];
@@ -27,7 +27,7 @@ public class BasicAlgo
 	double routeTimePenaltyFactor;
 	
 	
-	public BasicAlgo(ProblemInstance problemInstance) 
+	public ElitistWithCrossOver(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
 		this.problemInstance = problemInstance;
@@ -35,12 +35,12 @@ public class BasicAlgo
 		
 		population = new Individual[POPULATION_SIZE];
 		offspringPopulation = new Individual[NUMBER_OF_OFFSPRING];
-		temporaryPopulation = new Individual[NUMBER_OF_GENERATION];
+		temporaryPopulation = new Individual[POPULATION_SIZE];
 		
 		fitness = new double[POPULATION_SIZE];
 		cdf = new double[POPULATION_SIZE];
 		
-		loadPenaltyFactor = 500;
+		loadPenaltyFactor = 20;
 		routeTimePenaltyFactor = 0.6;
 		
 	}
@@ -48,10 +48,10 @@ public class BasicAlgo
 	public void run() 
 	{
 		
-		int selectedParent;
+		int selectedParent1,selectedParent2;
 		int i;
 		
-		Individual parent,offspring;
+		Individual parent1,parent2,offspring1,offspring2;
 
 		// INITIALISE POPULATION
 		initialisePopulation();
@@ -64,20 +64,53 @@ public class BasicAlgo
 			//sort function uses selection sort, replace with some O(n lg n) sort algthm
 
 			initialiseRouletteWheelSelection(generation);
-			
 			//Select a parent and apply genetic operator
 			for( i=0;i<NUMBER_OF_OFFSPRING;i++)
 			{
-					selectedParent=rouletteWheelSelection();
+					selectedParent1=rouletteWheelSelection();
 
-					parent = population[selectedParent];
-					offspring = new Individual(parent);
+					do
+					{
+						selectedParent2 = rouletteWheelSelection();
+					}while(selectedParent1==selectedParent2);
+					
+					
+					parent1 = population[selectedParent1];
+					parent2 = population[selectedParent2];
+					
+					offspring1 = new Individual(problemInstance);
+					offspring2 = new Individual(problemInstance);
 
-					applyMutation(offspring);
+					Individual.crossOver(problemInstance, parent1, parent2, offspring1, offspring2);
+					
+					/*
+					 out.print("--------------------CHECK CROSSOVER\n");
+					out.print("Parent 1 : \n");
+					parent1.miniPrint();
+					out.print("Parent 2 : \n");
+					parent2.miniPrint();
+					out.print("child 1 : \n");
+					offspring1.miniPrint();
+					out.print("child 2 : \n");
+					offspring2.miniPrint();
+					*/
+					
+					applyMutation(offspring1);
+					applyMutation(offspring2);
+					
+					
 					//parent.print();
-					offspring.calculateFitness();
+					offspring1.calculateFitness();
+					offspring2.calculateFitness();
 					//offspring.print();
-					offspringPopulation[i] = offspring;
+					offspringPopulation[i] = offspring1;
+					i++;
+					offspringPopulation[i]=offspring2;
+					
+					
+					
+					
+					
 			}
 
 
@@ -123,7 +156,7 @@ public class BasicAlgo
 		}
 
 
-		sortWithCost(population);
+		sort(population);
 		out.print("\n\n\n\n\n--------------------------------------------------\n");
 		out.print("\n\n\nFINAL POPULATION\n\n");
 		for( i=0;i<POPULATION_SIZE;i++)
@@ -136,26 +169,6 @@ public class BasicAlgo
 	
 	
 	
-	void sortWithCost(Individual[] array)
-	{
-		Individual temp;
-		//FOR NOW DONE SELECTION SORT
-		//AFTERWARDS REPLACE IT WITH QUICK SORT OR SOME OTHER O(n logn) sort
-		for(int i=0;i<array.length;i++)
-		{
-			for(int j=i+1;j<array.length;j++)
-			{
-				if(array[i].cost > array[j].cost)
-				{
-					temp = array[i];
-					array[i] =array[j];
-					array[j] = temp;
-				}
-			}
-		}
-
-	}
-
 	//SORT THE INDIVIDUALS ON ASCENDING ORDER OF COST
 	//BETTER INDIVIDUALS HAVE LOWER INDEX
 	//COST LESS, INDEX LESS ;-)
@@ -179,7 +192,6 @@ public class BasicAlgo
 
 	}
 
-	
 	void initialiseRouletteWheelSelection(int generation)
 	{
 		int i,j;
@@ -194,7 +206,7 @@ public class BasicAlgo
 			fitness[i] = population[i].cost;
 			// incorporate penalty
 	
-			double penalty = loadPenaltyFactor  * population[i].totalLoadViolation;
+			double penalty = loadPenaltyFactor * (generation+1) * population[i].totalLoadViolation;
 			if(penalty>0)fitness[i] += penalty;
 			
 			penalty = routeTimePenaltyFactor * (generation+1) * population[i].totalRouteTimeViolation;
@@ -263,14 +275,17 @@ public class BasicAlgo
 			int period = Utility.randomIntInclusive(problemInstance.periodCount-1);
 			offspring.mutatePermutation(period);//for now single period			
 		}
+		else if (selectedMutationOperator == 3){}
+		
 	}
 
 	//0 -> route partition
 	//1 ->	permutation
 	//2 -> route partition + permutation
+	//3 -> none
 	int selectMutationOperator()
 	{
-		return Utility.randomIntInclusive(2);
+		return Utility.randomIntInclusive(3);
 	}
 
 	void initialisePopulation()
@@ -281,7 +296,7 @@ public class BasicAlgo
 			population[i] = new Individual(problemInstance);
 			population[i].initialise();
 			out.println("Printing individual "+ i +" : \n");
-			population[i].print();
+			population[i].miniPrint();
 		}
 	}
 

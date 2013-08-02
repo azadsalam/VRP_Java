@@ -56,8 +56,8 @@ public class Solver
 	{
 		problemInstance.print();
 		
-		BasicAlgo basicAlgo = new BasicAlgo(problemInstance);
-		basicAlgo.run();
+		ElitistWithCrossOver ga = new ElitistWithCrossOver(problemInstance);
+		ga.run();
 		
 		output.close();
 		
