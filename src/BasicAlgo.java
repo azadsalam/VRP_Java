@@ -6,9 +6,9 @@ public class BasicAlgo
 {
 	PrintWriter out; 
 	
-	int POPULATION_SIZE = 3;
-	int NUMBER_OF_OFFSPRING = 2;
-	int NUMBER_OF_GENERATION = 10;
+	int POPULATION_SIZE = 200;
+	int NUMBER_OF_OFFSPRING = 100;
+	int NUMBER_OF_GENERATION = 500;
 	
 	ProblemInstance problemInstance;
 	Individual population[];
@@ -40,7 +40,7 @@ public class BasicAlgo
 		fitness = new double[POPULATION_SIZE];
 		cdf = new double[POPULATION_SIZE];
 		
-		loadPenaltyFactor = 0.6;
+		loadPenaltyFactor = 500;
 		routeTimePenaltyFactor = 0.6;
 		
 	}
@@ -63,57 +63,25 @@ public class BasicAlgo
 		{
 			//sort function uses selection sort, replace with some O(n lg n) sort algthm
 
-			//cout << "--------------------------\nGENERATION : "<<generation<<"\n";
-
+			initialiseRouletteWheelSelection(generation);
 			//Select a parent and apply genetic operator
 			for( i=0;i<NUMBER_OF_OFFSPRING;i++)
 			{
-					selectedParent=rouletteWheelSelection(generation);
+					selectedParent=rouletteWheelSelection();
 
 					parent = population[selectedParent];
 					offspring = new Individual(parent);
 
 					applyMutation(offspring);
-					//cout << "Selected Parent : " << selectedParent <<endl;
 					//parent.print();
 					offspring.calculateFitness();
-					//cout << "Offspring : "<<i<<"\n";
 					//offspring.print();
-
 					offspringPopulation[i] = offspring;
-
 			}
 
-
-			//cout <<"\n\n\n\n\n---TESTING (lamba + miu)"<<endl<<endl;
-
-			//////////////////////////////////////////////////////////////////////////
-			/*
-			cout <<"PRINTING PARENT POPULATION\n";
-			for( i=0;i<POPULATION_SIZE;i++)
-			{
-				cout << "parent " << i << " :\n";
-				population[i].print();
-			}
-			cout << endl<<endl;
-			*/
-			//////////////////////////////////////////////////////////////////////////////
 
 			//TAKE THE BEST "POPULATION_SIZE" individuals from the set of all parents and children
 			sort(offspringPopulation);
-
-
-			//////////////////////////////////////////////////////////////////////////////
-			/*
-			cout <<"PRINTING OFFSPRING POPULATION\n";
-			for( i=0;i<NUMBER_OF_OFFSPRING;i++)
-			{
-				cout << "offspring " << i << " :\n";
-				offspringPopulation[i].print();
-			}
-			cout << endl<<endl;
-			*/
-			//////////////////////////////////////////////////////////////////////////////
 
 			//first select best indivdls in the temporary array
 			//afterwards replace population with it
@@ -133,7 +101,7 @@ public class BasicAlgo
 					temporaryPopulation[cursor] = population[i];
 					i++;
 				}
-				else if(population[i].cost <= offspringPopulation[j].cost)
+				else if(population[i].costWithPenalty <= offspringPopulation[j].costWithPenalty)
 				{
 					temporaryPopulation[cursor] = population[i];
 					i++;
@@ -151,40 +119,23 @@ public class BasicAlgo
 			{
 				population[i] = temporaryPopulation[i];
 			}
-
-
-			//////////////////////////////////////////////////////////////////////////
-			/*
-			cout <<"PRINTING NEW GENERATION\n";
-			for( i=0;i<POPULATION_SIZE;i++)
-			{
-				cout << "parent " << i << " :\n";
-				population[i].print();
-			}
-			cout << endl<<endl;
-			*/
-			//////////////////////////////////////////////////////////////////////////////
-
-
-
 		}
 
 
-		//cout<<"\n\n\n\n\n--------------------------------------------------\n";
+		sortWithCost(population);
+		out.print("\n\n\n\n\n--------------------------------------------------\n");
 		out.print("\n\n\nFINAL POPULATION\n\n");
 		for( i=0;i<POPULATION_SIZE;i++)
 		{
-			out.println("Individual : "+i);
+			out.println("\n\nIndividual : "+i);
 			population[i].print();
 		}
 
 	}
 	
 	
-	//SORT THE INDIVIDUALS ON ASCENDING ORDER OF COST
-	//BETTER INDIVIDUALS HAVE LOWER INDEX
-	//COST LESS, INDEX LESS ;-)
-	void sort(Individual[] array)
+	
+	void sortWithCost(Individual[] array)
 	{
 		Individual temp;
 		//FOR NOW DONE SELECTION SORT
@@ -204,8 +155,31 @@ public class BasicAlgo
 
 	}
 
-	// it also calculates cost of every individual
-	int rouletteWheelSelection(int generation)
+	//SORT THE INDIVIDUALS ON ASCENDING ORDER OF COST
+	//BETTER INDIVIDUALS HAVE LOWER INDEX
+	//COST LESS, INDEX LESS ;-)
+	void sort(Individual[] array)
+	{
+		Individual temp;
+		//FOR NOW DONE SELECTION SORT
+		//AFTERWARDS REPLACE IT WITH QUICK SORT OR SOME OTHER O(n logn) sort
+		for(int i=0;i<array.length;i++)
+		{
+			for(int j=i+1;j<array.length;j++)
+			{
+				if(array[i].costWithPenalty > array[j].costWithPenalty)
+				{
+					temp = array[i];
+					array[i] =array[j];
+					array[j] = temp;
+				}
+			}
+		}
+
+	}
+
+	
+	void initialiseRouletteWheelSelection(int generation)
 	{
 		int i,j;
 		//SELECTION -> Roulette wheel
@@ -219,38 +193,41 @@ public class BasicAlgo
 			fitness[i] = population[i].cost;
 			// incorporate penalty
 	
-			double penalty = loadPenaltyFactor * (generation+1) * population[i].totalLoadViolation;
+			double penalty = loadPenaltyFactor  * population[i].totalLoadViolation;
 			if(penalty>0)fitness[i] += penalty;
 			
 			penalty = routeTimePenaltyFactor * (generation+1) * population[i].totalRouteTimeViolation;
 			if(penalty>0)fitness[i] += penalty;
 		
+			
+			//store the cost with penalty in the individual
+			population[i].costWithPenalty = fitness[i];
 			sumOfCost += fitness[i];
-			//cout << " "<<fitness[i];
+			
 		}
-		//cout <<"   Total cost : "<<sumOfCost<<endl;
 
-//		cout<< "Fitness : ";
 		for( i=0;i<POPULATION_SIZE;i++)
 		{
 			fitness[i] = sumOfCost / fitness[i]; // the original fitness			
 			sumOfFitness += fitness[i];
-		//	cout << " "<< fitness[i];
 		}
-		//cout <<"    Total fitness : "<<sumOfFitness<<endl;
-
+		
+		
 		for( i=0;i<POPULATION_SIZE;i++)
 		{
 			sumOfProability = cdf[i] = sumOfProability + ((double)fitness[i]/sumOfFitness);
 		}
 
+
+	}
+	// it also calculates cost of every individual
+	int rouletteWheelSelection()
+	{
 		double num = Utility.randomIntInclusive(100); // generate random number from [0,100]
 		double indicator = num/100;
 
 		//find the smallest index i, with cdf[i] greater than indicator
-
 		int par =  findParent(indicator);
-		//cout <<"Selected Parent : "<< par<<endl;
 		return par;
 
 	}
@@ -270,6 +247,7 @@ public class BasicAlgo
 	void applyMutation(Individual offspring)
 	{
 		int selectedMutationOperator = selectMutationOperator();
+		
 		if(selectedMutationOperator==0)offspring.mutateRoutePartition();
 		else if (selectedMutationOperator == 1)
 		{
@@ -278,14 +256,17 @@ public class BasicAlgo
 		}
 		else if (selectedMutationOperator == 2)
 		{
-			int client = Utility.randomIntInclusive(problemInstance.customerCount-1);
-			offspring.mutatePeriodAssignment(client);
+			//int client = Utility.randomIntInclusive(problemInstance.customerCount-1);
+			//offspring.mutatePeriodAssignment(client);
+			offspring.mutateRoutePartition();
+			int period = Utility.randomIntInclusive(problemInstance.periodCount-1);
+			offspring.mutatePermutation(period);//for now single period			
 		}
 	}
 
 	//0 -> route partition
 	//1 ->	permutation
-	//2 -> period
+	//2 -> route partition + permutation
 	int selectMutationOperator()
 	{
 		return Utility.randomIntInclusive(2);
@@ -297,7 +278,7 @@ public class BasicAlgo
 		for(int i=0; i<POPULATION_SIZE; i++)
 		{
 			population[i] = new Individual(problemInstance);
-			out.println("Printing individual "+ i +" : ");
+			out.println("Printing individual "+ i +" : \n");
 			population[i].print();
 		}
 	}

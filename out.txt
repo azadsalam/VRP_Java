@@ -28,43 +28,43 @@ PERIOD ASSIGMENT :
 
 1 1 1 1 1 
 Permutation : 
-1 3 4 2 0 
+2 0 4 3 1 
 Route partition : 1 4 
 
 
 LOAD VIOLATION MATRIX : 
 -4.0 -1.0 
 Total Load Violation : 0.0
-Total route time violation : 26.0
-Fitness/Cost : 31.0
+Total route time violation : 14.0
+Fitness/Cost : 19.0
 Printing individual 1 : 
 PERIOD ASSIGMENT : 
 
 1 1 1 1 1 
 Permutation : 
-1 0 2 4 3 
-Route partition : 4 4 
+3 1 2 0 4 
+Route partition : 2 4 
 
 
 LOAD VIOLATION MATRIX : 
-5.0 0.0 
-Total Load Violation : 5.0
-Total route time violation : 32.0
-Fitness/Cost : 22.0
+-1.0 -4.0 
+Total Load Violation : 0.0
+Total route time violation : 18.0
+Fitness/Cost : 23.0
 Printing individual 2 : 
 PERIOD ASSIGMENT : 
 
 1 1 1 1 1 
 Permutation : 
-4 2 0 3 1 
-Route partition : 0 4 
+2 3 0 4 1 
+Route partition : 2 4 
 
 
 LOAD VIOLATION MATRIX : 
--7.0 2.0 
-Total Load Violation : 2.0
-Total route time violation : 30.0
-Fitness/Cost : 35.0
+-1.0 -4.0 
+Total Load Violation : 0.0
+Total route time violation : 18.0
+Fitness/Cost : 23.0
 
 
 
@@ -75,40 +75,40 @@ PERIOD ASSIGMENT :
 
 1 1 1 1 1 
 Permutation : 
-1 0 2 4 3 
-Route partition : 2 4 
+0 1 2 3 4 
+Route partition : 4 4 
 
 
 LOAD VIOLATION MATRIX : 
--1.0 -4.0 
-Total Load Violation : 0.0
-Total route time violation : 12.0
-Fitness/Cost : 15.0
+5.0 0.0 
+Total Load Violation : 5.0
+Total route time violation : 24.0
+Fitness/Cost : 14.0
 Individual : 1
 PERIOD ASSIGMENT : 
 
 1 1 1 1 1 
 Permutation : 
-1 0 2 4 3 
-Route partition : 2 4 
+0 1 2 3 4 
+Route partition : 3 4 
 
 
 LOAD VIOLATION MATRIX : 
--1.0 -4.0 
-Total Load Violation : 0.0
-Total route time violation : 12.0
+2.0 -7.0 
+Total Load Violation : 2.0
+Total route time violation : 18.0
 Fitness/Cost : 15.0
 Individual : 2
 PERIOD ASSIGMENT : 
 
 1 1 1 1 1 
 Permutation : 
-1 2 0 4 3 
-Route partition : 2 4 
+2 1 0 3 4 
+Route partition : 3 4 
 
 
 LOAD VIOLATION MATRIX : 
--1.0 -4.0 
-Total Load Violation : 0.0
-Total route time violation : 12.0
+2.0 -7.0 
+Total Load Violation : 2.0
+Total route time violation : 18.0
 Fitness/Cost : 15.0

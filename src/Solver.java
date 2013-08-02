@@ -7,13 +7,12 @@ import javax.swing.plaf.metal.MetalIconFactory.FileIcon16;
 
 public class Solver 
 {
-	String inputFileName = "in.txt";
-	String outputFileName = "out.txt";
+	String inputFileName = "in1.txt";
+	String outputFileName = "out1.txt";
 	
 	File inputFile,outputFile;	
 	Scanner input;
 	PrintWriter output;
-	
 	
 	
 	

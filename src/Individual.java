@@ -8,8 +8,10 @@ public class Individual
 	int permutation[][];
 	int routePartition[];
 	double cost;
+	
+	double costWithPenalty;
 //	Utility utility;
-//	boolean isFeasible;
+	boolean isFeasible;
 //	boolean feasibilitySet;
 
 	double loadViolation[][];
@@ -25,6 +27,7 @@ public class Individual
 	public Individual()
 	{
 		cost = -1;
+		//costWithPenalty = -1;
 		//feasibilitySet = false;
 		//isFeasible = false;	
 	}
@@ -158,6 +161,7 @@ public class Individual
 		}
 
 		cost = original.cost;
+		//costWithPenalty = original.costWithPenalty;
 
 		//allocate demanViolationMatrix
 
@@ -173,7 +177,7 @@ public class Individual
 		totalLoadViolation = 0;
 		totalRouteTimeViolation = 0;
         
-		double temlLoad;
+		//double temlLoad;
 		for(int i=0;i<problemInstance.periodCount;i++)
 		{
 			for(int j=0;j<problemInstance.vehicleCount;j++)
@@ -184,11 +188,17 @@ public class Individual
                 if(loadViolation[i][j]>0) totalLoadViolation += loadViolation[i][j];
 			}
 		}
-
-
-
-
+		
 		cost = tempCost;
+
+		if(totalLoadViolation>0  || totalRouteTimeViolation > 0)
+		{
+			isFeasible = false;
+		}
+		else isFeasible = true;
+
+		
+		//costWithPenalty = cost + totalLoadViolation + totalRouteTimeViolation;
 		return cost;
 	}
 
@@ -234,7 +244,10 @@ public class Individual
 			}
 
 			costForPV +=	problemInstance.costMatrix[previous+problemInstance.depotCount][clientNode+problemInstance.depotCount];
-			totalRouteTime += problemInstance.travellingTimeMatrix[previous+problemInstance.depotCount][clientNode+problemInstance.depotCount];
+			
+			//ignoring travelling time for now - for cordeau MDVRP
+			//totalRouteTime += problemInstance.travellingTimeMatrix[previous+problemInstance.depotCount][clientNode+problemInstance.depotCount];
+			
 			previous = clientNode;
 
 		}
@@ -244,13 +257,12 @@ public class Individual
             costForPV += problemInstance.costMatrix[assignedDepot][activeStart+problemInstance.depotCount];
             costForPV += problemInstance.costMatrix[activeEnd+problemInstance.depotCount][assignedDepot];
 
-			totalRouteTime += problemInstance.travellingTimeMatrix[assignedDepot][activeStart+problemInstance.depotCount];
-            totalRouteTime += problemInstance.travellingTimeMatrix[activeEnd+problemInstance.depotCount][assignedDepot];
+//			totalRouteTime += problemInstance.travellingTimeMatrix[assignedDepot][activeStart+problemInstance.depotCount];
+//            totalRouteTime += problemInstance.travellingTimeMatrix[activeEnd+problemInstance.depotCount][assignedDepot];
         }
         loadViolation[period][vehicle] = clientDemand - problemInstance.loadCapacity[vehicle];
 
 		double routeTimeViolation = totalRouteTime - problemInstance.timeConstraintsOfVehicles[period][vehicle] ;
-
 		if(routeTimeViolation>0) totalRouteTimeViolation += routeTimeViolation;
 
 		return costForPV;
@@ -282,7 +294,7 @@ public class Individual
 		PrintWriter out = this.problemInstance.getPrintWriter();
 		int i,j;
 		
-		out.println("PERIOD ASSIGMENT : \n");
+		out.println("PERIOD ASSIGMENT : ");
 		for( i=0;i<problemInstance.periodCount;i++)
 		{
 			for( j=0;j<problemInstance.customerCount;j++)
@@ -311,7 +323,7 @@ public class Individual
 
         // print load violation
 
-		out.print("\n\nLOAD VIOLATION MATRIX : \n");
+		out.print("LOAD VIOLATION MATRIX : \n");
         for( i=0;i<problemInstance.periodCount;i++)
         {
             for( j=0;j<problemInstance.vehicleCount;j++)
@@ -321,11 +333,12 @@ public class Individual
             out.println();
         }
 
-        out.println("Total Load Violation : "+totalLoadViolation);
-        
-        out.println("Total route time violation : "+totalRouteTimeViolation);
-		
-		out.println("Fitness/Cost : " + cost);
+        out.println("Is Feasible : "+isFeasible);
+        out.println("Total Load Violation : "+totalLoadViolation);        
+        out.println("Total route time violation : "+totalRouteTimeViolation);		
+		out.println("Cost : " + cost);
+		//out.println("Cost with penalty : "+costWithPenalty);
+		out.println();
 		
 	}
 	

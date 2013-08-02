@@ -4,7 +4,7 @@
 2 ; number of total vehicles
 1 1 ; number of vehicle per depot
 10 10   ; Maximum allowable load of each vehicle 
-; t(total period) lines containg  v (total vehicle) values each referring maximum time limit for that day for that vehicle (NEW)
+; t(total period) lines containg  v (total vehicle) values each referring maximum time limit (route duration) for that day for that vehicle (NEW)
 15 15
 5 ; number of clients
 1 1 1 1 1 ; frequency
