@@ -55,7 +55,7 @@ public class Solver
 	{
 	//	problemInstance.print();
 		
-		Algo25_50_25_elitist ga = new Algo25_50_25_elitist(problemInstance);
+		Algo25_50_25_select_terminals ga = new Algo25_50_25_select_terminals(problemInstance);
 		ga.run();
 		
 		output.close();
