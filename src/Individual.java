@@ -27,7 +27,7 @@ public class Individual
 	public Individual()
 	{
 		cost = -1;
-		//costWithPenalty = -1;
+		costWithPenalty = -1;
 		//feasibilitySet = false;
 		//isFeasible = false;	
 	}
@@ -165,7 +165,7 @@ public class Individual
 		}
 
 		cost = original.cost;
-		//costWithPenalty = original.costWithPenalty;
+		costWithPenalty = original.costWithPenalty;
 
 		//allocate demanViolationMatrix
 
@@ -174,7 +174,7 @@ public class Individual
 	}
 
 	//calculate and return fitness of individual
-	double calculateFitness()
+	void calculateFitness()
 	{
 		double tempCost = 0;
 
@@ -202,8 +202,8 @@ public class Individual
 		else isFeasible = true;
 
 		
-		costWithPenalty = cost + totalLoadViolation + totalRouteTimeViolation;
-		return cost;
+		//costWithPenalty = cost + totalLoadViolation + totalRouteTimeViolation;
+		
 	}
 
 	//calcuate fitness for each period for each vehicle
@@ -568,6 +568,7 @@ public class Individual
 		{
 			for(i=0;i<n;i++)
 			{
+				//if(parent1==null)System.out.print("nul");
 				child.periodAssignment[period][i] = parent1.periodAssignment[period][i];
 			}
 		}

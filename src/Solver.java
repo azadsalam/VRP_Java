@@ -15,7 +15,6 @@ public class Solver
 	PrintWriter output;
 	
 	
-	
 		
 	ProblemInstance problemInstance;
 	public void initialise() 
@@ -54,9 +53,9 @@ public class Solver
 	}
 	public void solve() 
 	{
-		problemInstance.print();
+	//	problemInstance.print();
 		
-		ElitistWithCrossOver ga = new ElitistWithCrossOver(problemInstance);
+		Algo25_50_25_elitist ga = new Algo25_50_25_elitist(problemInstance);
 		ga.run();
 		
 		output.close();
