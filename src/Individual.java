@@ -108,7 +108,7 @@ public class Individual
 		}
 		routePartition[problemInstance.vehicleCount-1] = problemInstance.customerCount-1;
 
-		calculateFitness();
+		calculateCost();
 
 	}
 	
@@ -173,8 +173,8 @@ public class Individual
 
 	}
 
-	//calculate and return fitness of individual
-	void calculateFitness()
+	//calculate and return cost of individual
+	void calculateCost()
 	{
 		double tempCost = 0;
 

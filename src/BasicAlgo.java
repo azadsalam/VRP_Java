@@ -75,7 +75,7 @@ public class BasicAlgo
 
 					applyMutation(offspring);
 					//parent.print();
-					offspring.calculateFitness();
+					offspring.calculateCost();
 					//offspring.print();
 					offspringPopulation[i] = offspring;
 			}
@@ -190,7 +190,7 @@ public class BasicAlgo
 		//cout<< "SELECTION\nCost : ";
 		for( i=0;i<POPULATION_SIZE;i++)
 		{
-			population[i].calculateFitness();
+			population[i].calculateCost();
 			fitness[i] = population[i].cost;
 			// incorporate penalty
 	

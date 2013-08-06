@@ -100,8 +100,8 @@ public class ElitistWithCrossOver
 					
 					
 					//parent.print();
-					offspring1.calculateFitness();
-					offspring2.calculateFitness();
+					offspring1.calculateCost();
+					offspring2.calculateCost();
 					//offspring.print();
 					offspringPopulation[i] = offspring1;
 					i++;
@@ -202,7 +202,7 @@ public class ElitistWithCrossOver
 		//cout<< "SELECTION\nCost : ";
 		for( i=0;i<POPULATION_SIZE;i++)
 		{
-			population[i].calculateFitness();
+			population[i].calculateCost();
 			fitness[i] = population[i].cost;
 			// incorporate penalty
 	

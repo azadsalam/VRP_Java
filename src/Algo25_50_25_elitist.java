@@ -30,6 +30,8 @@ public class Algo25_50_25_elitist
 	
 	Individual parent1,parent2;
 	
+	boolean outputToFile = false;
+	
 	public Algo25_50_25_elitist(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
@@ -53,9 +55,12 @@ public class Algo25_50_25_elitist
 		//[76-100]
 		worstStart = moderateStart + moderateInterval + 1;
 		worstInterval = bestInterval;
+		
+		Solver.exportToCsv.init(NUMBER_OF_GENERATION+1);
+		
 	}
 
-	public void run() 
+	public Individual run() 
 	{
 		
 		int i,generation;
@@ -97,14 +102,19 @@ public class Algo25_50_25_elitist
 
 		
 		//sort(population);
-		out.print("\n\n\n\n\n--------------------------------------------------\n");
-		calculateCostWithPenalty(0, POPULATION_SIZE, generation, true);
-		out.print("\n\n\nFINAL POPULATION\n\n");
-		for( i=0;i<POPULATION_SIZE;i++)
+		if(outputToFile)
 		{
-			out.println("\n\nIndividual : "+i);
-			population[i].print();
+			out.print("\n\n\n\n\n--------------------------------------------------\n");
+			calculateCostWithPenalty(0, POPULATION_SIZE, generation, true);
+			out.print("\n\n\nFINAL POPULATION\n\n");
+			for( i=0;i<POPULATION_SIZE;i++)
+			{
+				out.println("\n\nIndividual : "+i);
+				population[i].print();
+			}
 		}
+		
+		return population[0];
 
 	}
 	
@@ -157,7 +167,7 @@ public class Algo25_50_25_elitist
 		
 		for(int i=start; i<start+length; i++)
 		{
-			population[i].calculateFitness();
+			population[i].calculateCost();
 			
 			penalty = 0;
 			penalty += population[i].totalLoadViolation * loadPenaltyFactor;
@@ -174,7 +184,15 @@ public class Algo25_50_25_elitist
 		
 		avg = sum / POPULATION_SIZE;
 
-		if(print)	out.format("Generation %d : Min : %f Avg : %f  Max : %f Feasible : %d \n",generation,min,avg,max,feasibleCount);
+		if(print && outputToFile)	out.format("Generation %d : Min : %f Avg : %f  Max : %f Feasible : %d \n",generation,min,avg,max,feasibleCount);
+		
+		if(print)
+		{
+			Solver.exportToCsv.min[generation] = min;
+			Solver.exportToCsv.avg[generation] = avg;
+			Solver.exportToCsv.max[generation] = max;
+			Solver.exportToCsv.feasibleCount[generation] = feasibleCount;
+		}
 	}
 	
 	//SORT THE INDIVIDUALS ON ASCENDING ORDER OF COST

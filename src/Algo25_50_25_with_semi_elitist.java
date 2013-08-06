@@ -2,7 +2,7 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 
-public class Algo25_50_25_select_terminals 
+public class Algo25_50_25_with_semi_elitist 
 {
 	PrintWriter out; 
 	
@@ -27,11 +27,12 @@ public class Algo25_50_25_select_terminals
 	double loadPenaltyFactor;
 	double routeTimePenaltyFactor;
 	
-	boolean outputToFile = false;
 	
 	Individual parent1,parent2;
 	
-	public Algo25_50_25_select_terminals(ProblemInstance problemInstance) 
+	boolean outputToFile = false;
+	
+	public Algo25_50_25_with_semi_elitist(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
 		this.problemInstance = problemInstance;
@@ -56,6 +57,7 @@ public class Algo25_50_25_select_terminals
 		worstInterval = bestInterval;
 		
 		Solver.exportToCsv.init(NUMBER_OF_GENERATION+1);
+		
 	}
 
 	public Individual run() 
@@ -93,24 +95,13 @@ public class Algo25_50_25_select_terminals
 
 			
 			calculateCostWithPenalty(POPULATION_SIZE, POPULATION_SIZE, generation,false);
-			
-			
-			//select 50% best and 50% worst solutions
+			//elitist approach,  taking best ones
 			sort(population	,0, POPULATION_SIZE*2);
-			//so keep the first 50% in its place, and swap the last 50% into correct place
-			
-			for(i=0;i<(POPULATION_SIZE/2);i++)
-			{
-				population[POPULATION_SIZE-1-i] = population[(2*POPULATION_SIZE)-1-i];
-			}
-			
-				
 		}
 
 
 		
 		//sort(population);
-		
 		if(outputToFile)
 		{
 			out.print("\n\n\n\n\n--------------------------------------------------\n");
@@ -122,6 +113,7 @@ public class Algo25_50_25_select_terminals
 				population[i].print();
 			}
 		}
+		
 		return population[0];
 
 	}
@@ -193,6 +185,7 @@ public class Algo25_50_25_select_terminals
 		avg = sum / POPULATION_SIZE;
 
 		if(print && outputToFile)	out.format("Generation %d : Min : %f Avg : %f  Max : %f Feasible : %d \n",generation,min,avg,max,feasibleCount);
+		
 		if(print)
 		{
 			Solver.exportToCsv.min[generation] = min;

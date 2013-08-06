@@ -2,13 +2,19 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 
-public class Algo25_50_25_select_terminals 
+public class Algo25_50_25_gradual_elitist 
 {
 	PrintWriter out; 
 	
 	int BEST = 0;
 	int MODERATE = 1;
 	int WORST = 2; 
+	
+	int STEPS =25 ; 
+	double bestPercentage  = 50;
+	double worstPercentage = 50;
+	double increment;
+	double stepSize;
 	
 	int bestStart,moderateStart,worstStart;
 	int bestInterval,moderateInterval,worstInterval; 
@@ -20,18 +26,15 @@ public class Algo25_50_25_select_terminals
 	ProblemInstance problemInstance;
 	Individual population[];
 
-	// for selection - roulette wheel
-	double fitness[];
-	double cdf[];
-
+	
 	double loadPenaltyFactor;
 	double routeTimePenaltyFactor;
 	
-	boolean outputToFile = false;
 	
 	Individual parent1,parent2;
 	
-	public Algo25_50_25_select_terminals(ProblemInstance problemInstance) 
+	boolean outputToFile = false;
+	public Algo25_50_25_gradual_elitist(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
 		this.problemInstance = problemInstance;
@@ -41,7 +44,11 @@ public class Algo25_50_25_select_terminals
 				
 		loadPenaltyFactor = 10;
 		routeTimePenaltyFactor = 1;
-	
+		
+		
+		increment = (double)50 / STEPS;
+		stepSize = (double)NUMBER_OF_GENERATION / (STEPS+1);
+		
 		//if pop = 100
 		//[0 - 25]
 		bestStart = 0;
@@ -56,12 +63,15 @@ public class Algo25_50_25_select_terminals
 		worstInterval = bestInterval;
 		
 		Solver.exportToCsv.init(NUMBER_OF_GENERATION+1);
+
 	}
 
 	public Individual run() 
 	{
 		
 		int i,generation;
+//		double multiplier;  for gradual change
+		int multiplier;
 		
 		Individual offspring1,offspring2;
 
@@ -95,11 +105,22 @@ public class Algo25_50_25_select_terminals
 			calculateCostWithPenalty(POPULATION_SIZE, POPULATION_SIZE, generation,false);
 			
 			
-			//select 50% best and 50% worst solutions
 			sort(population	,0, POPULATION_SIZE*2);
-			//so keep the first 50% in its place, and swap the last 50% into correct place
 			
-			for(i=0;i<(POPULATION_SIZE/2);i++)
+			
+			multiplier = (int)(generation/stepSize);
+			
+			int count = (int)(((worstPercentage - (increment * multiplier))*POPULATION_SIZE)/100);
+			
+			//double per = (worstPercentage - (increment * multiplier));
+			//System.out.format("Generation : %d Worst percntg : %f Count : %d\n",generation,per,count);
+			//Initially select 50% best and 50% worst
+			// Gradually become more elitist
+			// end in 100% best and 0% worst
+			// change the percentages STEPS times
+			
+			
+			for(i=0;i<count;i++)
 			{
 				population[POPULATION_SIZE-1-i] = population[(2*POPULATION_SIZE)-1-i];
 			}
@@ -110,7 +131,6 @@ public class Algo25_50_25_select_terminals
 
 		
 		//sort(population);
-		
 		if(outputToFile)
 		{
 			out.print("\n\n\n\n\n--------------------------------------------------\n");
