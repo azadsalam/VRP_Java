@@ -2,7 +2,7 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 
 
-public class Algo25_50_25_with_semi_elitist 
+public class Algo25_50_25_with_gradual_elitist_with_uniform_selection 
 {
 	PrintWriter out; 
 	
@@ -17,6 +17,10 @@ public class Algo25_50_25_with_semi_elitist
 	int NUMBER_OF_OFFSPRING = POPULATION_SIZE;   
 	int NUMBER_OF_GENERATION = 1000;
 	
+	int INITIAL_DEGREE_OF_ELITISM = 30;
+	int FINAL_DEGREE_OF_ELITISM = 80;
+	double elitistRatio;
+	
 	ProblemInstance problemInstance;
 	Individual population[];
 
@@ -30,9 +34,10 @@ public class Algo25_50_25_with_semi_elitist
 	
 	Individual parent1,parent2;
 	
-	boolean outputToFile = false;
+	static public boolean  outputToFile = true;
+	static public boolean writeToExcel = true;
 	
-	public Algo25_50_25_with_semi_elitist(ProblemInstance problemInstance) 
+	public Algo25_50_25_with_gradual_elitist_with_uniform_selection(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
 		this.problemInstance = problemInstance;
@@ -56,24 +61,32 @@ public class Algo25_50_25_with_semi_elitist
 		worstStart = moderateStart + moderateInterval + 1;
 		worstInterval = bestInterval;
 		
-		Solver.exportToCsv.init(NUMBER_OF_GENERATION+1);
+		
+		
+		if(writeToExcel) Solver.exportToCsv.init(NUMBER_OF_GENERATION+1);
 		
 	}
 
 	public Individual run() 
 	{
 		
+		
+		elitistRatio = (FINAL_DEGREE_OF_ELITISM - INITIAL_DEGREE_OF_ELITISM) / NUMBER_OF_GENERATION;
+		
 		int i,generation;
 		
 		Individual offspring1,offspring2;
 
 		initialisePopulation();
-		sort(population,0,POPULATION_SIZE);
+		//sort(population,0,POPULATION_SIZE);
 		
 		for( generation=0;generation<NUMBER_OF_GENERATION;generation++)
 		{
 			//sort function uses selection sort, replace with some O(n lg n) sort algthm
+			
 			calculateCostWithPenalty(0,POPULATION_SIZE,generation,true);
+			sort(population,0,POPULATION_SIZE);
+			
 			
 			i=0;
 			while(i<NUMBER_OF_OFFSPRING)
@@ -93,19 +106,35 @@ public class Algo25_50_25_with_semi_elitist
 				i++;
 			}
 
+			//only evaluate the newly born individuals
+			calculateCostWithPenalty(POPULATION_SIZE, POPULATION_SIZE, generation,false);			
+			sort(population,0,POPULATION_SIZE*2);
 			
-			calculateCostWithPenalty(POPULATION_SIZE, POPULATION_SIZE, generation,false);
-			//elitist approach,  taking best ones
-			sort(population	,0, POPULATION_SIZE*2);
+			//semi elitist approach, the a portion of best individuals always make to next generation
+			int n =  ((INITIAL_DEGREE_OF_ELITISM +(int)(elitistRatio* generation))* POPULATION_SIZE) / 100 ;
+			
+			int rand,rand2,index;
+			// do some selection mechanism here
+			//binary tournament
+			for(i=n;i<POPULATION_SIZE;i++)
+			{
+				rand  = Utility.randomIntInclusive(i, POPULATION_SIZE*2 - 1);
+				 
+				Individual temp = population[i];
+				population[i]= population[rand];
+				population[rand]=temp;
+			}
 		}
 
 
+		calculateCostWithPenalty(0, POPULATION_SIZE, generation, true);
+		sort(population, 0, POPULATION_SIZE);
 		
 		//sort(population);
 		if(outputToFile)
 		{
 			out.print("\n\n\n\n\n--------------------------------------------------\n");
-			calculateCostWithPenalty(0, POPULATION_SIZE, generation, true);
+		//	calculateCostWithPenalty(0, POPULATION_SIZE, generation, true);
 			out.print("\n\n\nFINAL POPULATION\n\n");
 			for( i=0;i<POPULATION_SIZE;i++)
 			{
@@ -118,6 +147,7 @@ public class Algo25_50_25_with_semi_elitist
 
 	}
 	
+	// selects pair of parents according to probability
 	void selectParent()
 	{
 		int random = Utility.randomIntInclusive(100);
@@ -133,7 +163,7 @@ public class Algo25_50_25_with_semi_elitist
 		parent1 = selectParent(p1);
 		parent2 = selectParent(p2);
 	}
-	
+	//picks a parent randomly from a category
 	Individual selectParent(int category)
 	{
 		
@@ -156,8 +186,7 @@ public class Algo25_50_25_with_semi_elitist
 		return population[index];
 	}
 	
-	
-	// determines fitness and penalty to calculate costWithPenalty
+	// calculate cost (calls calculateCost function) and adds penalty to determine costWithPenalty
 	void calculateCostWithPenalty(int start, int length, int generation,boolean print)
 	{
 		double sum=0,avg,penalty;
@@ -186,7 +215,7 @@ public class Algo25_50_25_with_semi_elitist
 
 		if(print && outputToFile)	out.format("Generation %d : Min : %f Avg : %f  Max : %f Feasible : %d \n",generation,min,avg,max,feasibleCount);
 		
-		if(print)
+		if(print && writeToExcel)
 		{
 			Solver.exportToCsv.min[generation] = min;
 			Solver.exportToCsv.avg[generation] = avg;

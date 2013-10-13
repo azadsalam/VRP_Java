@@ -33,7 +33,7 @@ public class Algo25_50_25_gradual_elitist
 	
 	Individual parent1,parent2;
 	
-	boolean outputToFile = false;
+	static public boolean outputToFile = false;
 	public Algo25_50_25_gradual_elitist(ProblemInstance problemInstance) 
 	{
 		// TODO Auto-generated constructor stub
@@ -129,7 +129,8 @@ public class Algo25_50_25_gradual_elitist
 		}
 
 
-		
+		calculateCostWithPenalty(0, (2*POPULATION_SIZE), generation, false);
+		sort(population, 0, POPULATION_SIZE*2);
 		//sort(population);
 		if(outputToFile)
 		{
